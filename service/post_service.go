@@ -4,8 +4,8 @@ import (
 	"errors"
 	"math/rand"
 
-	"../entity"
-	"../repository"
+	"github.com/bishehngliu/posts/entity"
+	"github.com/bishehngliu/posts/repository"
 )
 
 type PostService interface {
@@ -40,8 +40,8 @@ func (*service) Validate(post *entity.Post) error {
 }
 
 func (*service) Create(post *entity.Post) (*entity.Post, error) {
-	post.Id = rand.Int63()
-	return repo.Save(&post)
+	post.Id = rand.Int()
+	return repo.Save(post)
 }
 
 func (*service) FindAll() ([]entity.Post, error) {

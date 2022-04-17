@@ -1,6 +1,6 @@
 package repository
 
-import "../entity"
+import "github.com/bishehngliu/posts/entity"
 
 type PostRepository interface {
 	Save(post *entity.Post) (*entity.Post, error)

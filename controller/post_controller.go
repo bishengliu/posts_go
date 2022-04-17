@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"../entity"
-	"../service"
+	"github.com/bishehngliu/posts/entity"
+	"github.com/bishehngliu/posts/service"
 )
 
 type PostController interface {
