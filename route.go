@@ -2,62 +2,48 @@ package main
 
 import (
 	"encoding/json"
+	"math/rand"
 	"net/http"
-)
 
-type Post struct {
-	Id    int    `json:"id"`
-	Title string `json:"title"`
-	Text  string `json:"text"`
-}
+	"../entity"
+	"./repository"
+)
 
 var (
-	posts []Post
+	repo repository.PostRepository = repository.NewPostRepository()
 )
-
-func init() {
-	posts = []Post{
-		{
-			Id:    1,
-			Title: "Title1",
-			Text:  "Text1",
-		},
-	}
-}
 
 func getPosts(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	results, err := json.Marshal(&posts)
+	posts, err := repo.FindAll()
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte(`{"error": "failed to marshal the posts"}`))
+		w.Write([]byte(`{"error": "failed to get the posts"}`))
 		return
 	}
-
 	w.WriteHeader(http.StatusOK)
-	w.Write(results)
+	json.NewEncoder(w).Encode(posts)
 }
 
 func addPost(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	var post Post
+	var post entity.Post
 	err := json.NewDecoder(r.Body).Decode(&post)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte(`{"error": "failed to unmarshal the request"}`))
 		return
 	}
-	post.Id = len(posts) + 1
-	posts = append(posts, post)
 
-	result, err := json.Marshal(&post)
+	post.Id = rand.Int63()
+	result, err := repo.Save(&post)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte(`{"error": "failed to marshal the post"}`))
+		w.Write([]byte(`{"error": "failed to add the post"}`))
 		return
 	}
 
 	w.WriteHeader(http.StatusOK)
-	w.Write(result)
+	json.NewEncoder(w).Encode(result)
 }
