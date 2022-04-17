@@ -1,22 +1,33 @@
-package main
+package controller
 
 import (
 	"encoding/json"
-	"math/rand"
 	"net/http"
 
 	"../entity"
-	"./repository"
+	"../service"
 )
+
+type PostController interface {
+	GetPosts(w http.ResponseWriter, r *http.Request)
+	AddPost(w http.ResponseWriter, r *http.Request)
+}
+
+type controller struct{}
 
 var (
-	repo repository.PostRepository = repository.NewPostRepository()
+	postService service.PostService
 )
 
-func getPosts(w http.ResponseWriter, r *http.Request) {
+func NewPostController(service service.PostService) PostController {
+	postService = service
+	return &controller{}
+}
+
+func (*controller) GetPosts(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	posts, err := repo.FindAll()
+	posts, err := postService.FindAll()
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte(`{"error": "failed to get the posts"}`))
@@ -26,7 +37,7 @@ func getPosts(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(posts)
 }
 
-func addPost(w http.ResponseWriter, r *http.Request) {
+func (*controller) AddPost(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	var post entity.Post
 	err := json.NewDecoder(r.Body).Decode(&post)
@@ -35,14 +46,14 @@ func addPost(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte(`{"error": "failed to unmarshal the request"}`))
 		return
 	}
-
-	post.Id = rand.Int63()
-	result, err := repo.Save(&post)
+	err = postService.Validate(&post)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte(`{"error": "failed to add the post"}`))
+		w.Write([]byte(`{"error": "invalid post"}`))
 		return
 	}
+
+	result, err := postService.Create(&post)
 
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(result)
