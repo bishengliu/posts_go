@@ -5,10 +5,10 @@ import (
 	"log"
 	"net/http"
 
-	"./controller"
-	"./repository"
-	"./router"
-	"./service"
+	"github.com/bishehngliu/posts/controller"
+	"github.com/bishehngliu/posts/repository"
+	"github.com/bishehngliu/posts/router"
+	"github.com/bishehngliu/posts/service"
 )
 
 var (
@@ -26,7 +26,7 @@ func main() {
 	})
 
 	postRouter.GET("/posts", postController.GetPosts)
-	postRouter.POST("/posts", postController.FindAll)
+	postRouter.POST("/posts", postController.AddPost)
 
 	log.Println("server is listening on port ", PORT)
 	postRouter.SERVE(PORT)
